@@ -15,4 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt -r requirements-server.txt
 COPY python/ ./python/
 
 EXPOSE 8000
-CMD ["uvicorn", "python.server:app", "--host", "0.0.0.0", "--port", "8000"]
+# Shell form so ${PORT} expands at container start — Render (and similar
+# platforms) inject their own PORT and route traffic only to that port,
+# ignoring EXPOSE. Falls back to 8000 for plain `docker run` locally.
+CMD exec uvicorn python.server:app --host 0.0.0.0 --port ${PORT:-8000}
