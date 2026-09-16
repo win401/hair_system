@@ -541,3 +541,37 @@ Python 인터프리터도, OpenCV도, 53MB짜리 얼굴 인식·파싱 모델 �
 필요해 내가 대신 할 수 없다. 사용자가 직접 배포한 뒤 그 URL을
 `HAIR_COMPOSITOR_SERVICE_URL`(과 `HAIR_COMPOSITOR_API_KEY`)에 넣고
 `HAIR_COMPOSITOR_PROVIDER=http`로 전환해야 프로덕션에서 실제로 합성이 동작한다.
+
+### 2026-09-16 - Claude
+
+사용자 요청으로 `github.com/win401/hair_system`에 저장소를 초기화하고
+푸시했다. **아이비리그컷 레퍼런스 사진(`assets/style-references/`)은
+제외했다** — public 저장소에 권리 확인이 안 된 실제 인물 사진을 올리는 건
+별개 승인이 필요하다고 판단해서 먼저 물어봤고, 사용자가 "제외하고 푸시"를
+선택했다. `.gitignore`에 추가해뒀다. 푸시 전에 커밋 diff를 직접 스캔해서
+하드코딩된 키가 없는지도 확인했다. `python/models/face_parsing_resnet18.onnx`
+(50.7MB)가 GitHub 권장 최대 크기를 살짝 넘는다는 경고가 떴지만 푸시는 됐다 —
+나중에 여유 있을 때 Git LFS로 옮기는 게 좋겠다.
+
+레퍼런스 사진을 git에서 뺀 부작용으로, `lib/ai/gemini-adapter.ts`가 로컬
+파일을 직접 읽는 구조라 GitHub 연동 Vercel 배포에서는 아이비리그컷 생성이
+깨지는 문제가 생겼다. 사용자가 "스토리지에 넣자"고 해서 해결했다.
+
+- Supabase에 private `style-references` 버킷을 새로 만들고
+  (`supabase/migrations/0002_style_reference_bucket.sql`), 로컬의 6개
+  레퍼런스 파일(`front*.png`, `front*-hair.png`)을 `ivy-league/` 프리픽스로
+  업로드했다. 업로드 후 실제로 `storage.download()`를 호출해 6개 전부 PNG로
+  정상 다운로드되는 것까지 확인했다.
+- `lib/ai/gemini-adapter.ts`의 `loadReferenceImages`를 로컬 `fs.readFile`
+  대신 `getSupabaseAdmin().storage.from('style-references').download(...)`로
+  바꿨다. 서버 전용 코드라 service-role로 바로 받아오고, 별도 signed URL이
+  필요 없다.
+- `lib/styles.ts`의 `referenceImagePaths`를 `assets/style-references/...`
+  로컬 경로에서 `ivy-league/front-left.png` 같은 버킷 오브젝트 키로 바꿨다.
+- `next.config.ts`의 `outputFileTracingIncludes`가 더 이상 필요 없어져서
+  통째로 비웠다 (로컬 파일을 안 읽으니 번들에 끼워넣을 것도 없음).
+
+이제 아이비리그컷 스타일은 Vercel 배포 방식(GitHub 연동이든 CLI든)과
+무관하게 항상 Supabase에서 레퍼런스를 받아오므로, 이 부분의 배포 리스크는
+없어졌다. `npm run lint`, `npx tsc --noEmit`, `npm run build` 모두 통과.
+아직 코드 변경분은 git에 커밋·푸시하지 않은 상태다.

@@ -47,9 +47,12 @@ export const HAIR_STYLES: HairStyleOption[] = [
     minimumLength: "short",
     generationBrief:
       "Korean men's classic low-profile Ivy League cut exactly like the supplied front-left Korean reference. Create a compact, close-to-the-head silhouette with a clean low-to-mid taper: roughly 3–6 mm visually at the sideburns and around the ears, blended gradually into the upper sides without a disconnected undercut or skin fade. Keep the top controlled and low, roughly 2.5–4 cm, with the front only slightly longer than the crown. Direct the top forward from the crown, then let the front flow gently toward one side with only subtle root lift. Show most of the forehead, but keep the side flow broad, soft, and natural rather than drawing a hard part. The top surface must lie close to the head and form one restrained directional flow—not upright spikes, a round dome, or a tall quiff. Preserve a naturally irregular front hairline and a tight temple outline. Straight or subtly textured strands only—no spiky crew cut, blunt fringe, French crop, Caesar cut, bowl shape, comma hair, pompadour, dramatic comb-over, curtain bangs, wet clumps, curls, or fluffy volume. The unmistakable result is the low, side-flowing classic Ivy League silhouette shown in the references.",
+    // Paths are object keys in the private "style-references" Supabase
+    // Storage bucket (see lib/ai/gemini-adapter.ts), not local files — the
+    // real reference photos aren't committed to this public repo.
     referenceImagePaths: [
-      "assets/style-references/ivy-league/front-left.png",
-      "assets/style-references/ivy-league/front-left-hair.png",
+      "ivy-league/front-left.png",
+      "ivy-league/front-left-hair.png",
     ],
   },
   {
@@ -62,10 +65,10 @@ export const HAIR_STYLES: HairStyleOption[] = [
     generationBrief:
       "Korean men's short spiky Ivy League cut exactly like the supplied front and front-right Korean references. Create a compact, square, athletic silhouette with a clean low-to-mid taper: roughly 3–6 mm visually at the sideburns and around the ears, blended gradually into the upper sides without a disconnected undercut or harsh skin fade. Keep the top distinctly short and low, roughly 2–3.5 cm, with the front only slightly longer than the crown. Lift the short top strands upward and slightly forward into many fine, irregular, clearly separated points; keep at least 80% of the forehead visible. The front edge must be sparse and naturally broken, never a thick line of bangs. Keep the crown noticeably lower than the front, both side contours tight, and the total height restrained—do not form a round helmet, tall mound, or exaggerated quiff. Straight or subtly textured strands only—no low side-flowing classic Ivy League, generic textured crop, blunt fringe, French crop, Caesar cut, bowl shape, comma hair, pompadour, comb-over, curtain bangs, wet clumps, curls, or fluffy volume. The unmistakable result is the reference's very short Korean spiky Ivy League cut, not a longer crop or a rounded crew cut.",
     referenceImagePaths: [
-      "assets/style-references/ivy-league/front.png",
-      "assets/style-references/ivy-league/front-hair.png",
-      "assets/style-references/ivy-league/front-right.png",
-      "assets/style-references/ivy-league/front-right-hair.png",
+      "ivy-league/front.png",
+      "ivy-league/front-hair.png",
+      "ivy-league/front-right.png",
+      "ivy-league/front-right-hair.png",
     ],
   },
   {

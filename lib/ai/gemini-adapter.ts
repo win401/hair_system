@@ -1,7 +1,5 @@
 import "server-only";
 
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { GoogleGenAI } from "@google/genai";
 import type {
   GenerateHairstyleInput,
@@ -10,6 +8,7 @@ import type {
 } from "./types";
 import { getHairStyleById } from "@/lib/styles";
 import { preserveOriginalPortrait } from "@/lib/server/hair-compositor";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 const VARIANTS = [
   {
@@ -209,29 +208,35 @@ function readImageDimensions(bytes: Buffer, mimeType: string) {
   return null;
 }
 
+const STYLE_REFERENCE_BUCKET = "style-references";
+
 async function loadReferenceImages(referenceImagePaths: string[]) {
+  if (referenceImagePaths.length === 0) return [];
+
+  const supabase = getSupabaseAdmin();
   return Promise.all(
-    referenceImagePaths.map(async (referencePath) => ({
-      mimeType: mimeTypeForPath(referencePath),
-      base64: (await readFile(resolveReferencePath(referencePath))).toString("base64"),
-    }))
+    referenceImagePaths.map(async (referencePath) => {
+      assertSafeReferencePath(referencePath);
+      const { data, error } = await supabase.storage
+        .from(STYLE_REFERENCE_BUCKET)
+        .download(referencePath);
+      if (error || !data) {
+        throw new Error(
+          `헤어스타일 기준 이미지를 불러오지 못했습니다: ${referencePath}`
+        );
+      }
+      return {
+        mimeType: mimeTypeForPath(referencePath),
+        base64: Buffer.from(await data.arrayBuffer()).toString("base64"),
+      };
+    })
   );
 }
 
-const STYLE_REFERENCE_PREFIX = "assets/style-references/";
-
-function resolveReferencePath(referencePath: string) {
-  if (
-    !referencePath.startsWith(STYLE_REFERENCE_PREFIX) ||
-    referencePath.includes("..")
-  ) {
+function assertSafeReferencePath(referencePath: string) {
+  if (referencePath.startsWith("/") || referencePath.includes("..")) {
     throw new Error("허용되지 않은 헤어스타일 기준 이미지 경로입니다.");
   }
-  return path.join(
-    process.cwd(),
-    "assets/style-references",
-    referencePath.slice(STYLE_REFERENCE_PREFIX.length)
-  );
 }
 
 function mimeTypeForPath(referencePath: string) {

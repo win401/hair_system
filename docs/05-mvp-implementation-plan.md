@@ -186,4 +186,12 @@ M2를 가장 빠른 데모 지점으로 잡은 이유: 계정/키가 전혀 없�
   띄우고 실제 얼굴 사진으로 `/composite`를 호출해 정상 동작, 인증 실패(401),
   잘못된 입력(400) 케이스까지 확인했다. 실제 Render/Fly.io 등에 배포하는
   작업은 아직 사용자가 계정에서 직접 해야 한다.
+- [x] GitHub 저장소 초기화·푸시 (2026-09-16, Claude) —
+  `github.com/win401/hair_system`에 푸시. 실제 인물 사진(아이비리그컷
+  레퍼런스)은 권리 미확인 상태로 public 저장소에 올리지 않기로 하고
+  `.gitignore` 처리했다.
+- [x] 스타일 레퍼런스를 Supabase Storage로 이전 (2026-09-16, Claude) — 위
+  결정으로 로컬 파일을 못 쓰게 되면서 깨졌던 아이비리그컷 생성을, private
+  `style-references` 버킷 + `getSupabaseAdmin().storage.download()`로
+  바꿔 해결했다. 배포 방식과 무관하게 항상 동작한다.
 - [ ] M6 프라이버시·QA 마무리
