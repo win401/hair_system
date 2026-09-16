@@ -1,0 +1,11 @@
+node_modules
+.next
+.venv
+.git
+assets
+docs
+app
+lib
+public
+python/__pycache__
+*.md
