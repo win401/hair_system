@@ -194,4 +194,25 @@ M2를 가장 빠른 데모 지점으로 잡은 이유: 계정/키가 전혀 없�
   결정으로 로컬 파일을 못 쓰게 되면서 깨졌던 아이비리그컷 생성을, private
   `style-references` 버킷 + `getSupabaseAdmin().storage.download()`로
   바꿔 해결했다. 배포 방식과 무관하게 항상 동작한다.
+- [x] 합성 서비스 Render 배포 완료 (2026-09-16, 사용자 + Claude) —
+  `https://hair-system.onrender.com`. 첫 배포는 `Dockerfile`이 포트
+  8000을 하드코딩해서 Render의 `PORT`(10000) 스캔이 타임아웃, 실패했다.
+  `${PORT:-8000}` + `exec`로 고쳐서 재배포 성공. 실제 프로덕션 URL로
+  `/health`, `/composite`(진짜 얼굴 사진), 잘못된 키(401)까지 확인했다.
+  로컬 `.env.local`도 `HAIR_COMPOSITOR_PROVIDER=http`로 이 서비스를
+  가리키도록 전환했다 (로컬 서브프로세스보다 매 요청 네트워크를 타서 느릴
+  수 있음 — 빠른 반복 개발이 필요하면 `python` 모드로 다시 돌려도 됨).
+  Vercel 쪽 환경변수(`HAIR_COMPOSITOR_PROVIDER`, `HAIR_COMPOSITOR_SERVICE_URL`,
+  `HAIR_COMPOSITOR_API_KEY`)는 아직 설정 전 — Vercel 배포 자체가 아직 안 됨.
+- [x] Vercel 프로덕션 배포 완료 (2026-09-16, 사용자 + Claude) —
+  `https://hairsystem-sigma.vercel.app`. 사용자가 `vercel login`으로 인증한
+  뒤, `vercel link`로 GitHub 저장소와 자동 연결되는 프로젝트를 생성하고
+  8개 환경변수(`HAIR_GENERATOR_PROVIDER`, `GEMINI_API_KEY`,
+  `GEMINI_IMAGE_MODEL`, `HAIR_COMPOSITOR_PROVIDER`,
+  `HAIR_COMPOSITOR_SERVICE_URL`, `HAIR_COMPOSITOR_API_KEY`, `SUPABASE_URL`,
+  `SUPABASE_SECRET_KEY`)를 production·preview에 설정한 뒤 `vercel deploy
+  --prod`로 배포했다. 배포된 URL로 랜딩·위저드 시작·스타일 선택·상담 카드
+  (Supabase 조회)·디자이너 응답 화면까지 실제로 curl해서 200 확인했다.
+  `HAIR_GENERATOR_PROVIDER=gemini`가 프로덕션에도 켜져 있어 실제 방문자가
+  스타일 생성을 누르면 과금된다는 점은 계속 유의해야 한다.
 - [ ] M6 프라이버시·QA 마무리
