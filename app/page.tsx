@@ -19,6 +19,12 @@ export default function Home() {
       >
         체험 시작하기 (데모)
       </Link>
+      <Link
+        href="/camera"
+        className="rounded-md border border-violet-300 bg-violet-50 px-4 py-3 text-sm font-medium text-violet-800"
+      >
+        카메라로 바로 보기 (베타)
+      </Link>
     </main>
   );
 }

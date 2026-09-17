@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -179,6 +180,12 @@ export function StartForm({
           disabled={!wizard.selfieConsent || isProcessingImage}
           className="text-sm disabled:opacity-50 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-900 file:px-3 file:py-2 file:text-sm file:text-white"
         />
+        <Link
+          href="/camera"
+          className="rounded-md border border-violet-300 bg-violet-50 px-3 py-2 text-center text-sm font-medium text-violet-800"
+        >
+          카메라 AR로 아이비리그컷 먼저 보기
+        </Link>
         {isProcessingImage && (
           <p className="text-sm text-neutral-500">사진 처리 중...</p>
         )}

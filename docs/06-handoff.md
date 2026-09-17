@@ -48,6 +48,9 @@ Render (FastAPI, Docker)
 - `HAIR_COMPOSITOR_PROVIDER=http`(프로덕션) vs `python`(로컬 서브프로세스, 개발 편의용) 두 모드가 `lib/server/hair-compositor.ts`에 있다.
 - `/api/generate`는 유료 Gemini 호출 전에 Render `/health`를 최대 75초 기다려 깨운다. 합성 요청 자체는 최대 90초, Vercel 함수는 `maxDuration=300`으로 설정했다. 콜드 스타트가 실패하면 Gemini를 호출하지 않아 이미지 생성 비용이 발생하지 않는다.
 - AI 제공자(`HAIR_GENERATOR_PROVIDER`)와 추천 제공자(`HAIR_RECOMMENDER_PROVIDER`)는 각각 `mock`/`gemini`, `trend-curation`/`gemini`로 명시적 전환 — 키를 넣는 것만으로 실제 호출이 켜지지 않는다.
+- `/camera`는 MediaPipe Face Landmarker로 기기 안에서 얼굴을 추적하고 아이비리그
+  2D 실루엣을 표시한다. 촬영 전 영상 프레임은 서버로 보내지 않으며, 사용자가
+  선택한 캡처만 기존 셀카 캐시와 정밀 생성 흐름으로 전달한다.
 
 ## 환경변수 (값은 각 플랫폼 대시보드 또는 로컬 `.env.local`에서 확인)
 
@@ -102,7 +105,9 @@ HAIR_COMPOSITOR_API_KEY=test ./.venv/bin/python -m uvicorn python.server:app --p
 - **합성 최종 품질 검증 필요** — 과도하게 엄격했던 정렬 검사는 회전·확대·이동을 먼저 보정한 뒤 5개 얼굴 랜드마크 형태를 검사하도록 수정했다. 동일 인물 재프레이밍은 허용하고 다른 얼굴 레퍼런스는 차단하는 로컬 회귀를 통과했으나, 배포판에서 실제 Gemini 결과를 다시 생성해 헤어라인·halo·스타일 일치도를 확인해야 한다.
 - **디자이너가 `demo-salon` 1명만 시딩되어 있음** — 실제 가족 파일럿을 시작하려면 `designers` 테이블에 사촌/이모/이모부 등을 추가해야 한다.
 - **사전 인터뷰 설문 1건 수집** — 남성 커트·펌 중심 원장 응답을 `AGENTS.md` 현장 피드백에 기록했다. 표본이 1명뿐이므로 외부 디자이너 응답을 더 받아야 한다.
-- **실시간 카메라 체험은 아직 미구현** — 생성형 AI를 매 프레임 호출하지 않고, 기기 내 얼굴 추적과 2D/3D 헤어 자산으로 탐색한 뒤 선택 장면만 정밀 AI 생성으로 보내는 하이브리드 안을 `docs/07-live-camera-ar-plan.md`에 정리했다.
+- **실시간 카메라 체험은 기술 스파이크 단계** — `/camera`에 기기 내 얼굴 추적,
+  아이비리그 2D 벡터 필터, 크기·농도 조절, 캡처→기존 위저드 연결을 구현했다.
+  실제 iPhone/Android 성능 검증과 실사/3D 헤어 자산, 귀·얼굴 가림은 남아 있다.
 - **비용**: Gemini 이미지 생성 1회(버튼 1클릭 = 1장) 약 $0.07. Render/Supabase는 현재 무료 티어로 충분.
 
 ## 참고 문서
@@ -110,4 +115,5 @@ HAIR_COMPOSITOR_API_KEY=test ./.venv/bin/python -m uvicorn python.server:app --p
 - [`docs/README.md`](./README.md) — 전체 기획 문서 인덱스
 - [`docs/05-mvp-implementation-plan.md`](./05-mvp-implementation-plan.md) — 구현 계획과 마일스톤별 진행 상황(M0~M6)
 - [`docs/07-live-camera-ar-plan.md`](./07-live-camera-ar-plan.md) — 실시간 카메라 헤어 AR의 단계별 구현안
+- [`docs/08-production-backend-and-app-roadmap.md`](./08-production-backend-and-app-roadmap.md) — 실제 서비스 백엔드·앱 출시 방향
 - [`../AGENTS.md`](../AGENTS.md) — Claude·Codex 작업 로그 (시간순, 가장 상세함)

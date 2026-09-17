@@ -14,6 +14,7 @@
 - Python/OpenCV 합성기로 원본 얼굴을 유지하고 생성된 헤어 영역만 반영
 - Render 합성 서비스 콜드 스타트를 유료 Gemini 호출 전에 확인
 - 원본/결과 비교 슬라이더, 재방문 사진 캐시, 사진 삭제·전체 초기화
+- `/camera` 기기 내 얼굴 추적 기반 아이비리그 2D AR 베타와 캡처 연결
 - Supabase 상담 카드 저장과 디자이너 응답 화면
 - 링크 토큰을 아는 파일럿 사용자만 접근 가능한 게이트
 
@@ -49,4 +50,5 @@ npm run build
 - 현재 배포·환경·남은 작업: [`docs/06-handoff.md`](docs/06-handoff.md)
 - 구현 계획: [`docs/05-mvp-implementation-plan.md`](docs/05-mvp-implementation-plan.md)
 - 실시간 카메라 AR 계획: [`docs/07-live-camera-ar-plan.md`](docs/07-live-camera-ar-plan.md)
+- 실서비스 백엔드·앱 로드맵: [`docs/08-production-backend-and-app-roadmap.md`](docs/08-production-backend-and-app-roadmap.md)
 - 상세 작업 로그: [`AGENTS.md`](AGENTS.md)
