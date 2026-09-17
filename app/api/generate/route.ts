@@ -3,8 +3,10 @@ import { generateRequestSchema } from "@/lib/validation";
 import { getHairstyleGenerator } from "@/lib/ai/adapter";
 import { MAX_IMAGE_DATA_URL_LENGTH } from "@/lib/image-constraints";
 import { validateImageDataUrl } from "@/lib/server/validate-image-data-url";
+import { ensureHairCompositorReady } from "@/lib/server/hair-compositor";
 
 const MAX_REQUEST_BYTES = MAX_IMAGE_DATA_URL_LENGTH + 10_000;
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   const contentLength = Number(request.headers.get("content-length"));
@@ -33,6 +35,10 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Render Free sleeps after inactivity. Wake and verify the compositor
+    // before the paid Gemini call so a cold-start failure does not waste an
+    // image generation charge.
+    await ensureHairCompositorReady();
     const generator = getHairstyleGenerator();
     const images = await generator.generateHairstyle({
       selfieDataUrl: parsed.data.selfieDataUrl,

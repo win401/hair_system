@@ -1,34 +1,52 @@
 # 남성 헤어 상담 MVP
 
-셀카와 모발 상태를 입력하고 남성 커트·펌 스타일을 선택해 결과 카드 흐름을
-검증하는 Next.js 데모입니다. 현재 AI 결과 화면은 업로드한 원본을 반복 표시하는
-목업이며, 실제 헤어 변환이라고 표시하지 않습니다.
+셀카와 현재 모발 상태를 바탕으로 남성 헤어스타일을 미리 확인하고, 결과를 상담
+카드로 만들어 디자이너 검토와 네이버 예약으로 연결하는 Next.js 서비스입니다.
 
-## 실행
+프로덕션은 링크 전용 접근 게이트를 적용해 Vercel에 배포되어 있습니다. 실제 접근
+토큰과 API 키는 저장소에 포함하지 않습니다.
+
+## 현재 구현
+
+- 남성 커트·펌 7종: 아이비리그컷은 클래식/스파이키 별도 제공
+- Gemini 3.1 Flash Image 정밀 미리보기 1장
+- 아이비리그 기준 이미지는 private Supabase Storage에서 서버가 로드
+- Python/OpenCV 합성기로 원본 얼굴을 유지하고 생성된 헤어 영역만 반영
+- Render 합성 서비스 콜드 스타트를 유료 Gemini 호출 전에 확인
+- 원본/결과 비교 슬라이더, 재방문 사진 캐시, 사진 삭제·전체 초기화
+- Supabase 상담 카드 저장과 디자이너 응답 화면
+- 링크 토큰을 아는 파일럿 사용자만 접근 가능한 게이트
+
+## 로컬 실행
 
 ```bash
+npm install
 cp .env.example .env.local
 npm run dev
 ```
 
-브라우저에서 [http://localhost:3000](http://localhost:3000)을 열고
-`/start/demo-salon`에서 체험할 수 있습니다.
+필수 환경변수의 실제 값은 Vercel·Render·Supabase 대시보드 또는 로컬
+`.env.local`에서 관리합니다. 전체 목록은 `.env.example`을 참고하세요.
 
-## 현재 범위
+로컬 Python 합성기를 사용하려면:
 
-- 남성 헤어 6종 선택
-- 셀카 리사이즈와 브라우저 세션 임시 보관
-- 사진 이용 동의, 개별 삭제, 전체 초기화
-- 생성 API의 스타일 allowlist와 JPEG/PNG/WebP 용량·파일 시그니처 검증
-- 목업/실제 생성 제공자 명시적 분리
+```bash
+python3 -m venv .venv
+./.venv/bin/pip install -r requirements.txt
+```
 
 ## 검증
 
 ```bash
 npm run lint
+npx tsc --noEmit
 npm run build
+./.venv/bin/python -m py_compile python/hair_composite.py python/server.py
 ```
 
-Gemini 3.1 Flash Lite Image 어댑터와 로컬 키 인증은 완료했습니다. 이미지 생성은
-무료 티어가 아니므로 비용을 확인한 뒤에만 `HAIR_GENERATOR_PROVIDER=gemini`로
-전환합니다. 기본값은 계속 `mock`입니다.
+## 문서
+
+- 현재 배포·환경·남은 작업: [`docs/06-handoff.md`](docs/06-handoff.md)
+- 구현 계획: [`docs/05-mvp-implementation-plan.md`](docs/05-mvp-implementation-plan.md)
+- 실시간 카메라 AR 계획: [`docs/07-live-camera-ar-plan.md`](docs/07-live-camera-ar-plan.md)
+- 상세 작업 로그: [`AGENTS.md`](AGENTS.md)

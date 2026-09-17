@@ -7,6 +7,34 @@ import path from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
+const COMPOSITOR_WARMUP_TIMEOUT_MS = 75_000;
+const COMPOSITOR_REQUEST_TIMEOUT_MS = 90_000;
+
+export async function ensureHairCompositorReady() {
+  if ((process.env.HAIR_COMPOSITOR_PROVIDER ?? "python") !== "http") return;
+
+  const serviceUrl = requireCompositorServiceUrl();
+  try {
+    const response = await fetch(`${serviceUrl}/health`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(COMPOSITOR_WARMUP_TIMEOUT_MS),
+    });
+    if (!response.ok) {
+      throw new Error(`http_${response.status}`);
+    }
+    const body = (await response.json().catch(() => null)) as {
+      status?: string;
+    } | null;
+    if (body?.status !== "ok") {
+      throw new Error("invalid_health_response");
+    }
+  } catch (error) {
+    console.error("[hair-compositor] warmup failed:", error);
+    throw new Error(
+      "헤어 합성 서버를 준비하지 못했어요. 이미지 생성 비용은 발생하지 않았습니다. 잠시 후 다시 시도해 주세요."
+    );
+  }
+}
 
 export async function preserveOriginalPortrait({
   sourceDataUrl,
@@ -78,17 +106,12 @@ async function compositeViaHttpService({
   generatedBase64: string;
   styleId: string;
 }) {
-  const serviceUrl = process.env.HAIR_COMPOSITOR_SERVICE_URL;
-  if (!serviceUrl) {
-    throw new Error(
-      "HAIR_COMPOSITOR_SERVICE_URL is required when HAIR_COMPOSITOR_PROVIDER=http."
-    );
-  }
+  const serviceUrl = requireCompositorServiceUrl();
   const apiKey = process.env.HAIR_COMPOSITOR_API_KEY;
 
   let response: Response;
   try {
-    response = await fetch(`${serviceUrl.replace(/\/$/, "")}/composite`, {
+    response = await fetch(`${serviceUrl}/composite`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -99,7 +122,7 @@ async function compositeViaHttpService({
         generated_base64: generatedBase64,
         style_id: styleId,
       }),
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(COMPOSITOR_REQUEST_TIMEOUT_MS),
     });
   } catch (error) {
     throw new Error(toSafeCompositeMessage(error));
@@ -121,6 +144,16 @@ async function compositeViaHttpService({
     );
   }
   return `data:image/jpeg;base64,${body.output_base64}`;
+}
+
+function requireCompositorServiceUrl() {
+  const serviceUrl = process.env.HAIR_COMPOSITOR_SERVICE_URL;
+  if (!serviceUrl) {
+    throw new Error(
+      "HAIR_COMPOSITOR_SERVICE_URL is required when HAIR_COMPOSITOR_PROVIDER=http."
+    );
+  }
+  return serviceUrl.replace(/\/$/, "");
 }
 
 function extractBase64(dataUrl: string) {
